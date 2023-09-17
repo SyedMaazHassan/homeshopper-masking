@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #container {
+            position: relative;
+            display: inline-block; /* Ensures container size matches image size */
+        }
+        #image {
+            max-width: 100%;
+            height: auto;
+            display: block; /* Ensures the image takes up the full container */
+        }
+        #canvas, #maskCanvas, #imageCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        
+
+    
+
+        
+    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+            
+        <h1>Demo</h1>
+        <div style="margin: 10px;">
+            <input type="text" name="" id="posPromptInput" value="wall picture frame, picture on wall, poster on wall">
+            <input type="text" name="" id="negPromptInput" value="cropped, worst quality, low quality">
+
+            <div id="ViewToggleContainer" style="display: none; margin: 10px;">
+                <input type="checkbox" name="" id="show-mask-toggle">
+                <label for="">Show mask</label>    
+            </div>
+
+            <button  style="margin: 10px;" id="generateMaskButton">Generate Mask</button>
+
+            <button style="margin: 10px; display: none;" id="submitBtn">Submit</button>
+
+            <input type="file" id="imageInput" accept="image/*">
+        
+            
+        </div>
+
+        <div  id="container">
+            <img id="selectedImage" src="#" alt="Selected Image" class="" style="display: none;">
+            <img src="#" id="image" class="image" alt="">
+            <canvas id="maskCanvas"></canvas>
+            <canvas id="canvas"></canvas>
+            <canvas id="imageCanvas" style="z-index: -10;"></canvas>
+        </div>
+
+
+        <div class="my-4">
+            <h1>Results</h1>
+            <div class="row my-5" id="result-container">
+
+            </div>
+        </div>
+        
+
+    </div>
+
+</body>
+
+
+
+<!-- Brush -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="masking.js"></script>
+<script>
+// Initialize the ImageManipulator object
+let url_to_submit = "http://127.0.0.1:8000/api/gligen_text"
+ImageManipulator.init();
+
+
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+    let form_data = ImageManipulator.prepareFormData();
+    form_data.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+    });
+
+    fetch("http://127.0.0.1:8000/api/gligen_text", {
+        method: 'POST',
+        headers: {
+            "x-api-key": "x646fVUb.ImWwv2qwSQh5YGzaf9t41K5wII3KDuw8"
+        },
+        body: form_data,
+    })
+    .then((response) => {
+        if (response.ok) {
+            console.log('Images submitted successfully.');
+            let output = response.json();
+            return output;            
+        } else {
+            console.error('Failed to submit images.');
+            // Show error here
+
+            return null;
+        }
+
+    })
+    .then(response => {
+        if (response) {
+
+            // Show output images
+            console.log(response);
+            let images = response.data;
+            console.log(images);
+            for (let image_index = 0; image_index < images.length; image_index++) {
+                let image_url = images[image_index];
+                let image_element = `<img src="${image_url}" style="width: 100%;" alt="">`;
+
+                // Create a new div element with the class 'col-sm-6'
+                const newDiv = document.createElement('div');
+                newDiv.classList.add('col-sm-6'); // Add the class 'col-sm-6'
+                newDiv.classList.add('my-3'); // Add the class 'col-sm-6'
+                newDiv.innerHTML = image_element;
+
+                // Find the parent container by id
+                const resultContainer = document.getElementById('result-container');
+
+                // Append the new div (containing your image_element) as a child to the resultContainer
+                resultContainer.appendChild(newDiv);
+
+            }
+        }
+
+     
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
+});
+
+
+
+
+// JavaScript
+
+
+
+// const canvas = document.getElementById('canvas');
+// const ctx = canvas.getContext('2d');
+// const image = document.getElementById('image');
+// const img_input = document.getElementById('imageInput');
+
+// const canvasimage = document.getElementById('imageCanvas');
+// const ctximage = canvasimage.getContext('2d');
+
+
+// let isDrawing = false;
+// let drawingPath = []; // Store the path points for the shape
+// let previousX, previousY;
+
+
+// // Get references to the new canvas and the "Generate Mask" button
+// const maskCanvas = document.getElementById('maskCanvas');
+// const generateMaskButton = document.getElementById('generateMaskButton');
+// const maskCtx = maskCanvas.getContext('2d');
+
+
+
+
+
+// // Function to generate the mask
+// function generateMask() {
+//     // Clear the mask canvas and fill it with black
+//     maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+//     maskCtx.fillStyle = 'black';
+//     maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+
+//     // Draw the selected region in white
+//     maskCtx.globalCompositeOperation = 'source-over'; // Set the composite operation to default
+//     maskCtx.fillStyle = 'white';
+//     maskCtx.beginPath();
+//     for (const point of drawingPath) {
+//         maskCtx.lineTo(point.x, point.y);
+//     }
+//     maskCtx.closePath();
+//     maskCtx.fill();
+
+//     // display View option now
+//     document.getElementById("ViewToggleContainer").style.display = "block";
+//     document.getElementById("submitBtn").style.display = "block"
+    
+// }
+
+
+
+
+
+// // image.addEventListener('load', () => {
+// //     canvas.width = image.width;
+// //     canvas.height = image.height;
+// //     // Set the new canvas size to match the image size
+// //     maskCanvas.width = canvas.width;
+// //     maskCanvas.height = canvas.height;
+// //     ctx.drawImage(image, 0, 0);
+// // });
+
+
+
+// function loadImageToCanvas() {
+//     canvas.width = image.width;
+//     canvas.height = image.height;
+//     // Set the new canvas size to match the image size
+//     maskCanvas.width = canvas.width;
+//     maskCanvas.height = canvas.height;
+
+//     canvasimage.width = canvas.width;
+//     canvasimage.height = canvas.height;
+
+//     ctx.drawImage(image, 0, 0);
+
+//     ctximage.drawImage(image, 0, 0);
+
+// }
+
+
+// function startDrawing(e) {
+//     e.preventDefault();
+
+//     // Clear the canvas before starting a new selection
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     ctx.drawImage(image, 0, 0);
+
+//     isDrawing = true;
+//     previousX = e.clientX - canvas.getBoundingClientRect().left;
+//     previousY = e.clientY - canvas.getBoundingClientRect().top;
+//     ctx.beginPath();
+//     ctx.moveTo(previousX, previousY);
+//     drawingPath = []; // Clear the previous path
+//     drawingPath.push({ x: previousX, y: previousY }); // Store the start point
+// }
+
+// function draw(e) {
+//     e.preventDefault();
+//     if (!isDrawing) return;
+//     const currentX = e.clientX - canvas.getBoundingClientRect().left;
+//     const currentY = e.clientY - canvas.getBoundingClientRect().top;
+
+//     ctx.strokeStyle = 'red';
+//     ctx.lineWidth = 5;
+
+//     // Draw a line from the previous point to the current point
+//     ctx.lineJoin = 'round'; // Create a brush-like effect
+//     ctx.lineCap = 'round';
+//     ctx.lineTo(currentX, currentY);
+//     ctx.stroke();
+
+//     // Store the current point in the path
+//     drawingPath.push({ x: currentX, y: currentY });
+
+//     // Update the previous coordinates
+//     previousX = currentX;
+//     previousY = currentY;
+// }
+
+
+// function canvasToImage(canvas) {
+//     return canvas.toDataURL('image/png');
+// }
+
+
+// function stopDrawing() {
+//     isDrawing = false;
+//     ctx.closePath();
+
+//     // Check if the endpoint is close to the start point
+//     const startPoint = drawingPath[0];
+//     const endPoint = drawingPath[drawingPath.length - 1];
+//     const distance = Math.sqrt(
+//         (endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2
+//     );
+
+//     if (distance < 10) {
+//         // Draw the shape and show the area as selected
+//         ctx.fillStyle = 'rgba(0, 0, 255, 0.5)'; // Fill with blue color (adjust as needed)
+//         ctx.beginPath();
+//         for (const point of drawingPath) {
+//             ctx.lineTo(point.x, point.y);
+//         }
+//         ctx.closePath();
+//         ctx.fill();
+
+
+//         const selectedRegionData = {
+//             path: drawingPath, // Array of points that define the shape
+//             imageData: ctx.getImageData(0, 0, canvas.width, canvas.height), // Image data within the selected region
+//         };
+
+//         console.log(selectedRegionData);
+        
+
+//     }else {
+//         // Remove the stroke if the endpoint is not close to the start point
+//         ctx.clearRect(0, 0, canvas.width, canvas.height);
+//         ctx.drawImage(image, 0, 0);
+//     }
+// }
+
+
+// // Function to handle image selection and display
+// function handleImageUpload() {
+//     const imageInput = document.getElementById('imageInput');
+//     const selectedImage = image;
+
+//     // Check if a file is selected
+//     if (imageInput.files.length > 0) {
+//         const file = imageInput.files[0];
+//         const reader = new FileReader();
+
+//         reader.onload = function (e) {
+//             // Set the source of the image element to the selected file
+//             image.src = e.target.result;
+//             image.style.display = 'block';
+
+//             // Add image in canvas
+          
+//         };
+
+//         // Read the selected file as a data URL
+//         reader.readAsDataURL(file);
+//         setTimeout(() => {
+//             loadImageToCanvas();
+//         }, 500);
+//     }
+// }
+
+
+// canvas.addEventListener('mousedown', startDrawing);
+// canvas.addEventListener('mousemove', draw);
+// canvas.addEventListener('mouseup', stopDrawing);
+// img_input.addEventListener('change', handleImageUpload);
+
+
+// // Event listener for the "Generate Mask" button
+// generateMaskButton.addEventListener('click', generateMask);
+
+
+// let toggle = document.getElementById('show-mask-toggle');
+// toggle.addEventListener('change', function () {
+//     // Toggle the checked state of the checkbox
+//     console.log(toggle.checked);
+//     if (toggle.checked) {
+//         canvas.style.opacity = "0";
+//     }else{
+//         canvas.style.opacity = "100";
+//     }
+// });
+
+
+
+// // Event listener for the "Submit" button
+// document.getElementById('submitBtn').addEventListener('click', () => {
+//     // Convert the canvas and maskCanvas to images
+//     const canvasImage = canvasToImage(canvas);
+//     const maskCanvasImage = canvasToImage(maskCanvas);
+//     const mainImage = canvasToImage(canvasimage);
+//     const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+//     // Create a FormData object to send the images
+//     const formData = new FormData();
+//     formData.append('canvasImage', canvasImage);
+//     formData.append('maskCanvasImage', maskCanvasImage);
+//     formData.append('mainImage', mainImage);
+//     formData.append('csrfmiddlewaretoken', csrfToken);
+
+//     // Send the FormData to the backend using a fetch request
+//     fetch("{% url 'submit-images' %}", {
+//         method: 'POST',
+//         body: formData,
+//     })
+//     .then((response) => {
+//         // Handle the response from the backend
+//         if (response.ok) {
+//             // Successful submission
+//             console.log(response.data);
+//             console.log('Images submitted successfully.');
+//         } else {
+//             // Handle errors
+//             console.error('Failed to submit images.');
+//         }
+//     })
+//     .catch((error) => {
+//         console.error('Error:', error);
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+</html>
