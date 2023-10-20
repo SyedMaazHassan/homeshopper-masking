@@ -47,8 +47,16 @@
 
             <button style="margin: 10px; display: none;" id="submitBtn">Submit</button>
 
-            <input type="file" id="imageInput" accept="image/*">
-        
+            <div>
+                <label for="">Room image</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+
+            <div>
+                <label>Product Image</label>
+                <input type="file" id="productImageInput" accept="image/*">        
+            </div>
+
             
         </div>
 
@@ -58,6 +66,10 @@
             <canvas id="maskCanvas"></canvas>
             <canvas id="canvas"></canvas>
             <canvas id="imageCanvas" style="z-index: -10;"></canvas>
+        </div>
+        <div>Product image: <hr>
+        <img src="" id="product-image-view" alt="">
+        
         </div>
 
 
@@ -90,7 +102,7 @@ document.getElementById('submitBtn').addEventListener('click', ()=>{
         console.log(`${key}: ${value}`);
     });
 
-    fetch("http://127.0.0.1:8000/api/gligen_text", {
+    fetch("http://127.0.0.1:8000/api/gligen", {
         method: 'POST',
         headers: {
             "x-api-key": "x646fVUb.ImWwv2qwSQh5YGzaf9t41K5wII3KDuw8"

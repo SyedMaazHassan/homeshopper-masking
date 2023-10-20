@@ -5,6 +5,8 @@ const ImageManipulator = {
     image: document.getElementById('selectedImage'),
     imageInput: document.getElementById('imageInput'),
     maskCanvas: document.getElementById('maskCanvas'),
+    productImageInput: document.getElementById('productImageInput'),
+    productImageViewer: document.getElementById('product-image-view'),
     maskCtx: null,
     imageCanvas: document.getElementById('imageCanvas'),
     imageCtx: null,
@@ -26,6 +28,7 @@ const ImageManipulator = {
 
     addEventListeners: function () {
         this.imageInput.addEventListener('change', this.handleImageUpload.bind(this));
+        this.productImageInput.addEventListener('change', this.handleProductImageUpload.bind(this));
         this.canvas.addEventListener('mousedown', this.startDrawing.bind(this));
         this.canvas.addEventListener('mousemove', this.draw.bind(this));
         this.canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
@@ -33,6 +36,19 @@ const ImageManipulator = {
         document.getElementById('show-mask-toggle').addEventListener('change', this.toggleMask.bind(this));
         // document.getElementById('submitBtn').addEventListener('click', this.submitImages.bind(this));
     },
+
+    handleProductImageUpload: function () {
+        const file = this.productImageInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            this.productImageViewer.src = e.target.result;
+            this.productImageViewer.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+    },
+
 
     handleImageUpload: function () {
         const file = this.imageInput.files[0];
@@ -152,69 +168,21 @@ const ImageManipulator = {
         const canvasImage = this.canvasToImage(this.canvas);
         const maskCanvasImage = this.canvasToImage(this.maskCanvas);
         const mainImage = this.canvasToImage(this.imageCanvas);
+        const productImage = this.productImageViewer.src;
+        console.log("=======");
+        console.log(productImage);
+        console.log("=======");
         // const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
 
         const formData = new FormData();
         formData.append('canvasImage', canvasImage);
         formData.append('maskCanvasImage', maskCanvasImage);
         formData.append('mainImage', mainImage);
+        formData.append('productImage', productImage);
+
         formData.append('pos_prompt', this.pos_prompt);
         formData.append('neg_prompt', this.neg_prompt);        
         return formData;
 
-    },
-
-    // submitImages: function () {
-    //     const canvasImage = this.canvasToImage(this.canvas);
-    //     const maskCanvasImage = this.canvasToImage(this.maskCanvas);
-    //     const mainImage = this.canvasToImage(this.imageCanvas);
-    //     // const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
-
-    //     const formData = new FormData();
-    //     formData.append('canvasImage', canvasImage);
-    //     formData.append('maskCanvasImage', maskCanvasImage);
-    //     formData.append('mainImage', mainImage);
-    //     // formData.append('csrfmiddlewaretoken', csrfToken);
-    //     formData.append('X-Api-Key', 'x646fVUb.ImWwv2qwSQh5YGzaf9t41K5wII3KDuw8');
-
-    //     fetch(this.submission_url, {
-    //         method: 'POST',
-    //         body: formData,
-    //     })
-    //     .then((response) => {
-    //         if (response.ok) {
-    //             console.log('Images submitted successfully.');
-               
-    //         } else {
-    //             console.error('Failed to submit images.');
-    //         }
-    //         let output = response.json();
-    //         return output;
-    //     })
-    //     .then(data => {
-    //         console.log(data);
-    //         let images = data.api_response;
-    //         console.log(images);
-    //         for (let image_index = 0; image_index < images.length; image_index++) {
-    //             let image_url = images[image_index];
-    //             let image_element = `<img src="${image_url}" style="width: 100%;" alt="">`;
-
-    //             // Create a new div element with the class 'col-sm-6'
-    //             const newDiv = document.createElement('div');
-    //             newDiv.classList.add('col-sm-6'); // Add the class 'col-sm-6'
-    //             newDiv.classList.add('my-3'); // Add the class 'col-sm-6'
-    //             newDiv.innerHTML = image_element;
-
-    //             // Find the parent container by id
-    //             const resultContainer = document.getElementById('result-container');
-
-    //             // Append the new div (containing your image_element) as a child to the resultContainer
-    //             resultContainer.appendChild(newDiv);
-
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.error('Error:', error);
-    //     });
-    // }
+    }
 };
