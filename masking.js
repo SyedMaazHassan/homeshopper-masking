@@ -23,8 +23,6 @@ const ImageManipulator = {
         this.ctx = this.canvas.getContext('2d');
         this.maskCtx = this.maskCanvas.getContext('2d');
         this.imageCtx = this.imageCanvas.getContext('2d');
-        this.pos_prompt = document.getElementById('posPromptInput').value;
-        this.neg_prompt = document.getElementById('negPromptInput').value;
         this.addEventListeners();
     },
 
@@ -49,6 +47,12 @@ const ImageManipulator = {
         };
 
         reader.readAsDataURL(file);
+
+        // Basit code
+        
+        document.getElementById("productImageUploader").style.display = 'none'
+        document.getElementById("product_title").innerText = "Product Image"
+
     },
 
     getWidthHeight: function() {
@@ -96,22 +100,18 @@ const ImageManipulator = {
                 this.image.width = this.room_width;
                 this.image.height = this.room_height;
                 this.loadImageToCanvas();
+                this.image.style.opacity = '0';
             }, 5);
         };
 
         reader.readAsDataURL(file);
-    },
 
-    // loadImageToCanvas: function () {
-    //     this.canvas.width = this.image.width;
-    //     this.canvas.height = this.image.height;
-    //     this.maskCanvas.width = this.canvas.width;
-    //     this.maskCanvas.height = this.canvas.height;
-    //     this.imageCanvas.width = this.canvas.width;
-    //     this.imageCanvas.height = this.canvas.height;
-    //     this.ctx.drawImage(this.image, 0, 0);
-    //     this.imageCtx.drawImage(this.image, 0, 0);
-    // },
+        // Basit 
+        document.getElementById('roomImageUploader').style.display = 'none';
+        document.getElementById('generateMaskButton').style.display = "block"
+        document.getElementById("room_title").innerText = "Room Image"
+
+    },
     
 
     loadImageToCanvas: function () {
@@ -216,6 +216,8 @@ const ImageManipulator = {
     },
 
     prepareFormData: function() {
+        this.pos_prompt = document.getElementById('posPromptInput').value;
+        this.neg_prompt = document.getElementById('negPromptInput').value;
         const canvasImage = this.canvasToImage(this.canvas);
         const maskCanvasImage = this.canvasToImage(this.maskCanvas);
         const mainImage = this.canvasToImage(this.imageCanvas);
