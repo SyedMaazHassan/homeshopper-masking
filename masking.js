@@ -16,6 +16,8 @@ const ImageManipulator = {
     previousY: 0,
     pos_prompt: null,
     neg_prompt: null,
+    room_width: null,
+    room_height: null,
 
     init: function () {
         this.ctx = this.canvas.getContext('2d');
@@ -49,6 +51,37 @@ const ImageManipulator = {
         reader.readAsDataURL(file);
     },
 
+    getWidthHeight: function() {
+        // Calculate the maximum dimensions while maintaining aspect ratio
+        const maxWidth = window.innerWidth; // 20 is a padding value, adjust as needed
+        const maxHeight = window.innerHeight; // 20 is a padding value, adjust as needed
+
+        console.log("==");
+        console.log(maxWidth, maxHeight);
+        console.log("==");
+        console.log(this.image.width);
+
+        const aspectRatio = this.image.width / this.image.height;
+
+        let canvasWidth = this.image.width;
+        let canvasHeight = this.image.height;
+
+        if (canvasWidth > maxWidth) {
+            canvasWidth = maxWidth;
+            canvasHeight = maxWidth / aspectRatio;
+        }
+
+        if (canvasHeight > maxHeight) {
+            canvasHeight = maxHeight;
+            canvasWidth = maxHeight * aspectRatio;
+        }
+
+        console.log(canvasWidth, canvasHeight);
+
+        this.room_width = canvasWidth;
+        this.room_height = canvasHeight;
+    },
+
 
     handleImageUpload: function () {
         const file = this.imageInput.files[0];
@@ -57,30 +90,48 @@ const ImageManipulator = {
         reader.onload = (e) => {
             this.image.src = e.target.result;
             this.image.style.display = 'block';
+            this.image.style.width = "100%";
             setTimeout(() => {
+                this.getWidthHeight();
+                this.image.width = this.room_width;
+                this.image.height = this.room_height;
                 this.loadImageToCanvas();
-            }, 500);
+            }, 5);
         };
 
         reader.readAsDataURL(file);
     },
 
-    loadImageToCanvas: function () {
-        this.canvas.width = this.image.width;
-        this.canvas.height = this.image.height;
-        this.maskCanvas.width = this.canvas.width;
-        this.maskCanvas.height = this.canvas.height;
-        this.imageCanvas.width = this.canvas.width;
-        this.imageCanvas.height = this.canvas.height;
+    // loadImageToCanvas: function () {
+    //     this.canvas.width = this.image.width;
+    //     this.canvas.height = this.image.height;
+    //     this.maskCanvas.width = this.canvas.width;
+    //     this.maskCanvas.height = this.canvas.height;
+    //     this.imageCanvas.width = this.canvas.width;
+    //     this.imageCanvas.height = this.canvas.height;
+    //     this.ctx.drawImage(this.image, 0, 0);
+    //     this.imageCtx.drawImage(this.image, 0, 0);
+    // },
+    
 
-        this.ctx.drawImage(this.image, 0, 0);
-        this.imageCtx.drawImage(this.image, 0, 0);
+    loadImageToCanvas: function () {
+        this.image.width = this.room_width;
+        this.image.height = this.room_height;
+        this.canvas.width = this.room_width;
+        this.canvas.height = this.room_height;
+        this.maskCanvas.width = this.room_width;
+        this.maskCanvas.height = this.room_height;
+        this.imageCanvas.width = this.room_width;
+        this.imageCanvas.height = this.room_height;
+        this.ctx.drawImage(this.image, 0, 0, this.room_width, this.room_height);
+        this.imageCtx.drawImage(this.image, 0, 0, this.room_width, this.room_height);            
+
     },
 
     startDrawing: function (e) {
         e.preventDefault();
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(this.image, 0, 0);
+        this.ctx.clearRect(0, 0, this.room_width, this.room_height);
+        this.ctx.drawImage(this.image, 0, 0, this.room_width, this.room_height);
 
         this.isDrawing = true;
         this.previousX = e.clientX - this.canvas.getBoundingClientRect().left;
@@ -128,15 +179,15 @@ const ImageManipulator = {
             this.ctx.closePath();
             this.ctx.fill();
         } else {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(this.image, 0, 0);
+            this.ctx.clearRect(0, 0, this.room_width, this.room_height);
+            this.ctx.drawImage(this.image, 0, 0, this.room_width, this.room_height);
         }
     },
 
     generateMask: function () {
-        this.maskCtx.clearRect(0, 0, this.maskCanvas.width, this.maskCanvas.height);
+        this.maskCtx.clearRect(0, 0, this.room_width, this.room_height);
         this.maskCtx.fillStyle = 'black';
-        this.maskCtx.fillRect(0, 0, this.maskCanvas.width, this.maskCanvas.height);
+        this.maskCtx.fillRect(0, 0, this.room_width, this.room_height);
 
         this.maskCtx.globalCompositeOperation = 'source-over';
         this.maskCtx.fillStyle = 'white';
